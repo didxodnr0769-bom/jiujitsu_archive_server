@@ -29,24 +29,6 @@ const initialVideos = [
     note: "주짓수 하프가드 패스 강의 영상입니다",
     categoryId: 2,
   },
-  {
-    id: 4,
-    url: "https://www.youtube.com/watch?v=xAPM4lZnrpI",
-    title:
-      "하프가드탈출,플랫하드가드탈출,하프가드스윕,주짓수초보개념,주짓수기초",
-    type: "long",
-    note: "주짓수 하프가드 패스 강의 영상입니다",
-    categoryId: 3,
-  },
-  {
-    id: 5,
-    url: "https://www.youtube.com/watch?v=xAPM4lZnrpI",
-    title:
-      "하프가드탈출,플랫하드가드탈출,하프가드스윕,주짓수초보개념,주짓수기초",
-    type: "long",
-    note: "주짓수 하프가드 패스 강의 영상입니다",
-    categoryId: 2,
-  },
 ];
 
 // Video CRUD API
@@ -60,10 +42,27 @@ const initialVideos = [
  * - categoryId
  */
 router.post("/", (req, res) => {
-  const reqBody = req.body;
-  console.log("Request Body:", reqBody);
+  const { url, title, note, categoryId } = req.body;
 
-  res.json({ message: "Create a new video" });
+  const newVideoId =
+    initialVideos.length > 0
+      ? Math.max(...initialVideos.map((video) => video.id)) + 1
+      : 1;
+
+  const newVideo = {
+    id: newVideoId,
+    url,
+    title,
+    type: "long", // type은 long으로 고정
+    note,
+    categoryId,
+  };
+
+  initialVideos.push(newVideo);
+
+  res
+    .status(201)
+    .json({ message: "Video created successfully", video: newVideo });
 });
 
 /** 카테고리 아이디별 비디오 조회 */
@@ -84,15 +83,41 @@ router.get("/", (req, res) => {
 
 /** 비디오 수정 */
 router.put("/:videoId", (req, res) => {
-  const videoId = req.params.videoId;
-  const video = initialVideos.find((video) => video.id === parseInt(videoId));
+  const videoId = parseInt(req.params.videoId);
+  const { url, title, note, categoryId } = req.body;
 
-  res.json({ message: `Update video with id ${req.params.id}` });
+  const videoIndex = initialVideos.findIndex((video) => video.id === videoId);
+
+  if (videoIndex === -1) {
+    return res.status(404).json({ message: "Video not found" });
+  }
+
+  initialVideos[videoIndex] = {
+    ...initialVideos[videoIndex],
+    url: url || initialVideos[videoIndex].url,
+    title: title || initialVideos[videoIndex].title,
+    note: note || initialVideos[videoIndex].note,
+    categoryId: categoryId || initialVideos[videoIndex].categoryId,
+  };
+
+  res.json({
+    message: "Video updated successfully",
+    video: initialVideos[videoIndex],
+  });
 });
 
 /** 비디오 삭제 */
 router.delete("/:id", (req, res) => {
-  res.json({ message: `Delete video with id ${req.params.id}` });
+  const videoId = parseInt(req.params.id);
+  const videoIndex = initialVideos.findIndex((video) => video.id === videoId);
+
+  if (videoIndex === -1) {
+    return res.status(404).json({ message: "Video not found" });
+  }
+
+  initialVideos.splice(videoIndex, 1);
+
+  res.json({ message: "Video deleted successfully" });
 });
 
 module.exports = router;
