@@ -1,6 +1,13 @@
 const express = require("express");
 const app = express();
 const port = 3000;
+const dotenv = require('dotenv');
+
+if (process.env.NODE_ENV === 'production') {
+  dotenv.config({ path: '.env.production' });
+} else {
+  dotenv.config({ path: '.env.development' });
+}
 
 // CORS 미들웨어 (npm install cors 필요)
 const cors = require("cors");

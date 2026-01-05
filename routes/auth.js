@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const jwt = require("jsonwebtoken");
 
 // Auth API
 router.post("/login", (req, res) => {
@@ -8,9 +9,10 @@ router.post("/login", (req, res) => {
 
   // Mock Login
   if (id === "user" && password === "pass") {
+    const token = jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1h" });
     res.json({
       message: "Login successful",
-      result: { token: "mock-jwt-token", userName: "admin" },
+      result: { token, userName: "admin" },
     });
   } else {
     res.status(404).json({ message: "Invalid credentials" });
