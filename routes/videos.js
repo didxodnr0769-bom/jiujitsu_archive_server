@@ -13,7 +13,7 @@ const mapVideo = (video) => ({
  * 비디오 등록
  */
 router.post("/", async (req, res) => {
-  const { url, title, note, categoryId } = req.body;
+  const { url, title, note, categoryId, type } = req.body;
 
   try {
     const { data, error } = await supabase
@@ -22,7 +22,7 @@ router.post("/", async (req, res) => {
         {
           url,
           title,
-          type: "long", // type은 long으로 고정
+          type: type || "long", // default to 'long'
           note,
           category_id: categoryId,
         },
@@ -46,16 +46,28 @@ router.get("/:categoryId", async (req, res) => {
   const categoryId = req.params.categoryId;
 
   try {
-    const { data, error } = await supabase
-      .from("videos")
-      .select("*")
-      .eq("category_id", categoryId);
+    const [videosResponse, categoryResponse] = await Promise.all([
+      supabase.from("videos").select("*").eq("category_id", categoryId),
+      supabase
+        .from("categories")
+        .select("name")
+        .eq("id", categoryId)
+        .maybeSingle(),
+    ]);
 
-    if (error) throw error;
+    if (videosResponse.error) throw videosResponse.error;
 
-    const videos = data.map(mapVideo);
+    const videos = videosResponse.data.map(mapVideo);
+    const categoryName = categoryResponse.data
+      ? categoryResponse.data.name
+      : null;
+
     console.log("Category ID:", categoryId, "Count:", videos.length);
-    res.json({ message: "Request Success", videos: videos });
+    res.json({
+      message: "Request Success",
+      categoryName: categoryName,
+      videos: videos,
+    });
   } catch (error) {
     console.error("Error fetching videos by category:", error);
     res.status(500).json({ message: "Server Error", error: error.message });
@@ -80,13 +92,14 @@ router.get("/", async (req, res) => {
 /** 비디오 수정 */
 router.put("/:videoId", async (req, res) => {
   const videoId = parseInt(req.params.videoId);
-  const { url, title, note, categoryId } = req.body;
+  const { url, title, note, categoryId, type } = req.body;
 
   const updateData = {};
   if (url) updateData.url = url;
   if (title) updateData.title = title;
   if (note) updateData.note = note;
   if (categoryId) updateData.category_id = categoryId;
+  if (type) updateData.type = type;
 
   try {
     const { data, error } = await supabase

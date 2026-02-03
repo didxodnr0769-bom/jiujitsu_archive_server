@@ -17,3 +17,6 @@ coverage/
 .vscode/
 *.swp
 .idea/
+
+# scripts
+scripts/
