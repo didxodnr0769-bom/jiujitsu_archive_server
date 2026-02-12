@@ -104,9 +104,9 @@ router.put("/:videoId", async (req, res) => {
   const updateData = {};
   if (url) updateData.url = url;
   if (title) updateData.title = title;
-  if (note) updateData.note = note;
   if (categoryId) updateData.category_id = categoryId;
   if (type) updateData.type = type;
+  updateData.note = note;
 
   try {
     const { data, error } = await supabase
