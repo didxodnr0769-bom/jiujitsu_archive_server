@@ -47,7 +47,11 @@ router.get("/:categoryId", async (req, res) => {
 
   try {
     const [videosResponse, categoryResponse] = await Promise.all([
-      supabase.from("videos").select("*").eq("category_id", categoryId),
+      supabase
+        .from("videos")
+        .select("*")
+        .eq("category_id", categoryId)
+        .order("created_at", { ascending: false }),
       supabase
         .from("categories")
         .select("name")
@@ -77,7 +81,10 @@ router.get("/:categoryId", async (req, res) => {
 /** 전체 비디오 조회 */
 router.get("/", async (req, res) => {
   try {
-    const { data, error } = await supabase.from("videos").select("*");
+    const { data, error } = await supabase
+      .from("videos")
+      .select("*")
+      .order("created_at", { ascending: false });
 
     if (error) throw error;
 
